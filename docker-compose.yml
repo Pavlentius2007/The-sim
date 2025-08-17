@@ -15,33 +15,33 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      # Добавьте ваши переменные окружения здесь
-      # - JWT_SECRET=your-secret
-      # - ENCRYPTION_KEY=your-key
-      # - COOKIE_SECRET=your-cookie-secret
-      # - CSRF_SECRET=your-csrf-secret
-      # - ALLOWED_ORIGINS=https://yourdomain.com
+      # Обязательные переменные безопасности
+      - JWT_SECRET=rSA4hfVLhhwa3u2dfgH8bwzbj7Q5SG9zGwnqeFLfFvYQZTYYdPnXu9cH9zqkLpks
+      - ENCRYPTION_KEY=hQEhGj93DC4cQrnfbvmgYWG2WMKDqj93
+      - COOKIE_SECRET=KCTe6jLdwJs9ChaBZc8XMJLqF7v5D8uZ
+      - CSRF_SECRET=HmbmcNZ8g8sfhZGC8e6Vs3ESsx9Eh8ZpNAqUvjHWkT9ErcKwGr6HMkamMpdzBE4G
+      - ALLOWED_ORIGINS=http://localhost:3000,https://thesim.in,https://www.thesim.in
     volumes:
       # Для персистентности данных (опционально)
       - ./data:/app/data
     networks:
       - cosmiclanding-network
 
-  # Nginx для прокси и SSL (опционально)
-  nginx:
-    image: nginx:alpine
-    container_name: cosmiclanding-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - cosmiclanding
-    networks:
-      - cosmiclanding-network
+  # Nginx отключен для локального тестирования
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: cosmiclanding-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./ssl:/etc/nginx/ssl:ro
+  #   depends_on:
+  #     - cosmiclanding
+  #   networks:
+  #     - cosmiclanding-network
 
 networks:
   cosmiclanding-network:

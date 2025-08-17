@@ -12,11 +12,18 @@ WORKDIR /app
 # Копируем файлы зависимостей
 COPY package*.json ./
 
-# Устанавливаем зависимости
-RUN npm ci --only=production
+# Устанавливаем ВСЕ зависимости (включая dev для сборки)
+RUN npm ci
 
 # Копируем исходный код
 COPY . .
+
+# Устанавливаем переменные окружения для сборки
+ENV NODE_ENV=production
+ENV JWT_SECRET=yF83hS7WAaQtTqGHd6JuV3NMUEQ5m2cwbBmpVgGJ7cBbLHwZchtKyvGgYz3MkA7r
+ENV ENCRYPTION_KEY=Yh5BhFGfcpuR2NVa5ajqtWqgCczDqCtv
+ENV COOKIE_SECRET=j7dMx7xdvKkACjqV8uykN3tfPTNczZwm
+ENV CSRF_SECRET=jvjJ2CVgJhrEPSa6rGbL54ENRa6HdXnmLFcrUuwauFXuh8B5zgGa9MBVQDdxttzz
 
 # Собираем проект
 RUN npm run build
@@ -51,7 +58,7 @@ USER nextjs
 # Открываем порт
 EXPOSE 3000
 
-# Переменные окружения
+# Переменные окружения (будут переопределены в docker-compose)
 ENV NODE_ENV=production
 ENV PORT=3000
 

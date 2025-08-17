@@ -6,6 +6,9 @@ import { strictCors, applyCorsHeaders as _applyCorsHeaders } from '@/lib/cors'
 import { createSecureResponse, logSecurityEvent, applySecurityHeaders } from '@/lib/security'
 import { getVideosByLanguage } from '@/lib/videoData'
 
+// Принудительно делаем роут динамическим
+export const dynamic = 'force-dynamic'
+
 // Получаем данные о видео из нового файла
 const getVideos = (): VideoCollection => {
   return {

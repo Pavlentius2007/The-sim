@@ -28,21 +28,21 @@ export default function Video() {
   useEffect(() => {
     const fetchVideos = async () => {
       setLoading(true)
-      try {
-        // console.log('Fetching videos for language:', currentLanguage)
-        const response = await fetch(`/api/videos?language=${currentLanguage}`)
-        const data = await response.json()
-        
+              try {
+          // console.log('Fetching videos for language:', currentLanguage)
+          const response = await fetch(`/api/videos?language=${currentLanguage}`)
+          const data = await response.json()
+          
                   // console.log('Received video data:', data)
-        
-        if (data.videos && data.videos.length > 0) {
-          setVideos(data.videos)
-          setCurrentVideo(data.videos[0]) // Показываем первое видео
-                      // console.log('Set current video:', data.videos[0])
-        } else {
-          setCurrentVideo(null)
-                      // console.log('No videos found for language:', currentLanguage)
-        }
+          
+          if (data.videos && data.videos.length > 0) {
+            setVideos(data.videos)
+            setCurrentVideo(data.videos[0]) // Показываем первое видео
+                        // console.log('Set current video:', data.videos[0])
+          } else {
+            setCurrentVideo(null)
+                        // console.log('No videos found for language:', currentLanguage)
+          }
       } catch (error) {
         console.error('Failed to fetch videos:', error)
         setCurrentVideo(null)
@@ -54,18 +54,29 @@ export default function Video() {
     fetchVideos()
   }, [currentLanguage])
 
-  // Получаем URL для YouTube видео
+  // Получаем URL для YouTube видео (улучшенная версия)
   const getVideoUrl = (video: VideoData, _quality: string) => {
     if (video.videoType === 'youtube' && video.youtubeUrl) {
-      // Конвертируем YouTube ссылку в embed формат
+      console.log('🔗 Original URL:', video.youtubeUrl)
+      
+      let videoId = ''
+      
+      // Извлекаем video ID из разных форматов YouTube URL
       if (video.youtubeUrl.includes('youtube.com/watch?v=')) {
-        const videoId = video.youtubeUrl.split('v=')[1]?.split('&')[0]
-        return `https://www.youtube.com/embed/${videoId}`
+        videoId = video.youtubeUrl.split('v=')[1]?.split('&')[0] || ''
       } else if (video.youtubeUrl.includes('youtu.be/')) {
-        const videoId = video.youtubeUrl.split('youtu.be/')[1]?.split('?')[0]
-        return `https://www.youtube.com/embed/${videoId}`
+        videoId = video.youtubeUrl.split('youtu.be/')[1]?.split('?')[0] || ''
+      } else if (video.youtubeUrl.includes('youtube.com/embed/')) {
+        videoId = video.youtubeUrl.split('embed/')[1]?.split('?')[0] || ''
       }
-      return video.youtubeUrl
+      
+      if (videoId) {
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1`
+        console.log('🎥 Embed URL:', embedUrl)
+        return embedUrl
+      }
+      
+      console.warn('❌ Could not extract video ID from:', video.youtubeUrl)
     }
     return ''
   }
@@ -159,6 +170,19 @@ export default function Video() {
                 >
                   {/* Video Thumbnail Background */}
                   <div className="w-full h-full bg-gradient-to-br from-blue-600/20 via-purple-600/20 to-indigo-600/20 relative">
+                    {/* Реальное превью YouTube */}
+                    {currentVideo.thumbnail && (
+                      <img 
+                        src={currentVideo.thumbnail} 
+                        alt={currentVideo.title}
+                        className="absolute inset-0 w-full h-full object-cover opacity-40"
+                        loading="lazy"
+                      />
+                    )}
+                    
+                    {/* Градиент поверх превью */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-600/30 via-purple-600/30 to-indigo-600/30"></div>
+                    
                     {/* Floating Elements */}
                     <div className="float-animation absolute top-1/4 left-1/4 w-16 h-16 bg-blue-500/10 rounded-full blur-lg"></div>
                     <div className="float-animation float-animation-delay-1 absolute bottom-1/4 right-1/4 w-20 h-20 bg-purple-500/10 rounded-full blur-lg"></div>
@@ -345,11 +369,11 @@ export default function Video() {
 
       {/* Video Modal */}
       {showVideo && currentVideo && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-5xl">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="relative w-full max-w-5xl my-8">
             <button
               onClick={() => setShowVideo(false)}
-              className="absolute -top-16 right-0 text-white hover:text-gray-300 text-3xl z-10 bg-gray-800/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700/80 transition-all duration-200"
+              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-2xl z-10 bg-gray-800/80 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center hover:bg-gray-700/80 transition-all duration-200"
             >
               ✕
             </button>
@@ -358,14 +382,17 @@ export default function Video() {
             
             <div className="aspect-video bg-gray-900 rounded-2xl overflow-hidden shadow-2xl border border-gray-700/50">
               {currentVideo.videoType === 'youtube' ? (
-                <iframe
-                  src={getVideoUrl(currentVideo, _selectedQuality)}
-                  className="w-full h-full"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={currentVideo.title}
-                />
+                <>
+                  <iframe
+                    src={getVideoUrl(currentVideo, _selectedQuality)}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    title={currentVideo.title}
+                    loading="lazy"
+                  />
+                </>
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-white">
                   <div className="text-center">
@@ -381,10 +408,17 @@ export default function Video() {
               <p className="text-gray-300 text-lg leading-relaxed mb-4">{currentVideo.description}</p>
               {currentVideo.videoType === 'youtube' && (
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 bg-red-500/20 px-3 py-2 rounded-lg border border-red-500/30">
+                  <button
+                    onClick={() => {
+                      if (currentVideo.youtubeUrl) {
+                        window.open(currentVideo.youtubeUrl, '_blank')
+                      }
+                    }}
+                    className="flex items-center gap-2 bg-red-500/20 px-3 py-2 rounded-lg border border-red-500/30 hover:bg-red-500/30 transition-colors duration-200 cursor-pointer"
+                  >
                     <VideoIcon className="w-4 h-4 text-red-400" />
                     <span className="text-red-400 font-medium">YouTube</span>
-                  </div>
+                  </button>
                   <div className="flex items-center gap-2 bg-gray-700/50 px-3 py-2 rounded-lg">
                     <VideoIcon className="w-4 h-4 text-gray-400" />
                     <span className="text-gray-300 text-sm">Длительность: {currentVideo.duration}</span>
