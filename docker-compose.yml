@@ -1,0 +1,51 @@
+# 🐳 CosmicLanding - Docker Compose
+# Простое развертывание в продакшене
+
+version: '3.8'
+
+services:
+  cosmiclanding:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cosmiclanding-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      # Добавьте ваши переменные окружения здесь
+      # - JWT_SECRET=your-secret
+      # - ENCRYPTION_KEY=your-key
+      # - COOKIE_SECRET=your-cookie-secret
+      # - CSRF_SECRET=your-csrf-secret
+      # - ALLOWED_ORIGINS=https://yourdomain.com
+    volumes:
+      # Для персистентности данных (опционально)
+      - ./data:/app/data
+    networks:
+      - cosmiclanding-network
+
+  # Nginx для прокси и SSL (опционально)
+  nginx:
+    image: nginx:alpine
+    container_name: cosmiclanding-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - cosmiclanding
+    networks:
+      - cosmiclanding-network
+
+networks:
+  cosmiclanding-network:
+    driver: bridge
+
+volumes:
+  data:
